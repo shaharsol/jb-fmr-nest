@@ -1,0 +1,15 @@
+{
+  "name": "14-consume-our-npm-package",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "shaharsol-fmr-password-generator": "^1.1.0"
+  }
+}
