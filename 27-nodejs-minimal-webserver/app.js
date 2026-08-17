@@ -1,0 +1,1 @@
+require('http').createServer((request, response) => { response.end('<h1>welcome to Nodejs</h1>') }).listen(3000, () => { console.log('server started on port 3000') })
