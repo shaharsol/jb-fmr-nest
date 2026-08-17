@@ -27,3 +27,6 @@ const promise = readFilePromise('./sample.txt')
 promise
     .then((data) => { console.log('data from readFilePromise', data) }) // this is the callback that will be invoked in a promise resolve
     .catch((err) => { console.log('there was an error', err) }) // this is the callback that will be invoked in a promise reject
+
+
+    
