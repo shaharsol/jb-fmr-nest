@@ -1,41 +1,62 @@
-const { readFile, writeFile } = require('fs')
+const { readFile, writeFile, mkdir, unlink, rmdir } = require('fs')
+// i can always use the formal promisify func instead of writing my own
+const { promisify } = require('util')
 
-// to take a callback oriented function
-// and wrap it in a promise
-// we call: promisification
-const readFilePromise = (path) => {
-    return new Promise((resolve, reject) => {
-        readFile(path, (err, data) => {
-            if (err) {
-                reject(err)
-            } else {
-                resolve(data.toString())
-            }
+// even faster, import the promisified version from the fs/promises
+const { readFile } = require('fs/promises')
+
+// const readFilePromise = (path) => {
+//     return new Promise((resolve, reject) => {
+//         readFile(path, (err, data) => {
+//             if (err) {
+//                 reject(err)
+//             } else {
+//                 resolve(data.toString())
+//             }
+//         })
+//     })    
+// }
+
+// const writeFilePromise = (path, data) => {
+//     return new Promise((resolve, reject) => {
+//         writeFile(path, data, (err, data) => {
+//             if (err) {
+//                 reject(err)
+//             } else {
+//                 resolve(data)
+//             }
+//         })
+//     })   
+// }
+
+// build this func
+const promisify = (func) => {
+    return async (...args) => {
+        return new Promise((resolve, reject) => {
+            func(...args, (err, data) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(data)
+                }
+            })
         })
-    })    
+    }
 }
 
-const writeFilePromise = (path, data) => {
-    return new Promise((resolve, reject) => {
-        writeFile(path, data, (err, data) => {
-            if (err) {
-                reject(err)
-            } else {
-                resolve(data)
-            }
-        })
-    })   
-}
+const mkdirPromise = promisify(mkdir)
+const readFilePromise = promisify(readFile)
+const writeFilePromise = promisify(writeFile);
 
-// this style of async coding using concatenating then functions
-// was introduced in 2015 and was doubted as thenification
-// and helped prevent callback hell
-readFilePromise('./sample.txt')
-    .then(data => writeFilePromise('./sample.txt', data + data))
-    .then(data => console.log('this is the data returned from the write op', data))
-    .catch(err => console.log('err: ', err))
+(async() => {
+    const data = await readFilePromise('./sample.txt')
+    await mkdirPromise('testfolder')
+    await writeFilePromise('./testfolder/sample.txt', data + data)
+})()
 
-
-
-// i can't use writeFile here, becasue i won't have the input that i need (the file contents)
-// writeFile()
+// the task:
+// read the file data
+// and save a file with data+data in a new folder
+// await readFilePromise
+// await mkdir
+// await writeFilePromise
