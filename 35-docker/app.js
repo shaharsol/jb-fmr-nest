@@ -11,6 +11,9 @@ const loadUsers = async (request, response, next) => {
     next()
 }
 
+
+
+
 const filterUsers = async (request, response, next) => {
     request.filtered = request.query.filter ? request.users.filter(user => user.firstName.includes(request.query.filter)) : [...request.users]
     next()

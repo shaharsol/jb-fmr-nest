@@ -4,12 +4,16 @@ FROM node:22-alpine
 # we create a folder inside the new system, and we cd into it
 WORKDIR /app
 
-# now i want to copy the source files to the image
-# COPY {from which folder in the local machine} {to which folder on the new image}
-COPY . .
+# i start with copying only the package.json and package-lock.json
+# so i build dependencies first
+COPY package*.json .
 
 # now we want to install al dependencies
 RUN npm install
+
+# now i want to copy the source files to the image
+# COPY {from which folder in the local machine} {to which folder on the new image}
+COPY . .
 
 # the last command will always describe what happens when an image
 # is loaded into a container
