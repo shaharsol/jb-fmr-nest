@@ -30,3 +30,5 @@ ENTRYPOINT [ "node", "app.js" ]
 
 
 # docker run -d --name express-demo -p 3010:3000  shaharsol/express-middleware-demo:1.0
+# docker run -d --name express-demo -p 3010:3000 -e PORT=3001 -v /tmp:/var/lib  shaharsol/express-middleware-demo:1.8
+# docker run -d --name express-demo -p 3010:3001 -e DB_HOST=host.docker.internal -v /tmp:/var/lib  shaharsol/express-middleware-demo:1.9

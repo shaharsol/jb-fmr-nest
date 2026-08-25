@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  #docker run --name mysql -d -e MYSQL_ALLOW_EMPTY_PASSWORD=1 -e MYSQL_DATABASE=college -e MYSQL_TCP_PORT=3306 -p 3306:3306 mysql:latest
+  database:
+    container_name: mysql-compose
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+      - MYSQL_DATABASE=college
+      - MYSQL_TCP_PORT=3306
+    ports:
+      - 3306:3306
+    image: mysql:latest
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 30s
+      retries: 5
+
+  express:
+    container_name: express-demo-compose
+    ports:  
+      - 3010:3000
+    environment:
+      - DB_HOST=database
+    build: ./
+    depends_on:
+      database:
+        condition: service_healthy
