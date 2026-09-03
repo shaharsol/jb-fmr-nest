@@ -10,6 +10,10 @@ export class UsersService {
   ) {}
 
   findAll(): Promise<User[]> {
-    return this.userRepository.find();
+    return this.userRepository.find(); // select *
+  }
+
+  findOne(id: string): Promise<User | null> {
+    return this.userRepository.findOneBy({ id });
   }
 }
