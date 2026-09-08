@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './users/user.entity';
 
 @Module({
   imports: [
@@ -18,8 +17,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         port: configService.getOrThrow<number>('DB_PORT', 3306),
         username: configService.getOrThrow('DB_USER', 'root'),
         password: '',
-        database: configService.getOrThrow('DB_NAME', 'college'),
-        entities: [],
+        database: configService.getOrThrow('DB_NAME', 'crypto_auth'),
+        entities: [User],
         synchronize: true,
       }),
     }),
