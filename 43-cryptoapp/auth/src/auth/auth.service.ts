@@ -13,7 +13,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signup(signupDto: SignupDto) {
+  async signup(signupDto: SignupDto): Promise<{ accessToken: string }> {
     const existingUser = await this.usersService.findByEmail(signupDto.email);
     if (existingUser) {
       throw new ConflictException('user with this email already exist');
@@ -25,6 +25,27 @@ export class AuthService {
     return {
       accessToken,
     };
+  }
+
+  async login(user: User): Promise<{ accessToken: string }> {
+    const accessToken = await this.signJwt(user);
+    return {
+      accessToken,
+    };
+  }
+
+  async validateUser(email: string, password: string): Promise<User | null> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      return null;
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return null;
+    }
+
+    return user;
   }
 
   private signJwt(user: User): Promise<string> {
