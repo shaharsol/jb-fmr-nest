@@ -8,6 +8,8 @@ async function bootstrap() {
     new ValidationPipe({
       errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
       transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
     }),
   ); // use DTO files for validation
   await app.listen(process.env.PORT || 3000);
