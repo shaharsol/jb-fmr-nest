@@ -21,8 +21,9 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(signupDto.password, 10);
     const user = await this.usersService.create(signupDto.email, passwordHash);
+    const accessToken = await this.signJwt(user);
     return {
-      accessToken: this.signJwt(user),
+      accessToken,
     };
   }
 
