@@ -1,11 +1,17 @@
+import { JwtPayload } from './../../node_modules/@types/jsonwebtoken/index.d';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { SignupDto } from './dto/signup.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { User } from 'src/users/user.entity';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async signup(signupDto: SignupDto) {
     const existingUser = await this.usersService.findByEmail(signupDto.email);
@@ -14,7 +20,14 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(signupDto.password, 10);
-    const user = this.usersService.create(signupDto.email, passwordHash);
-    return user;
+    const user = await this.usersService.create(signupDto.email, passwordHash);
+    return {
+      accessToken: this.signJwt(user),
+    };
+  }
+
+  private signJwt(user: User): Promise<string> {
+    const payload: JwtPayload = { sub: user.id, email: user.email };
+    return this.jwtService.signAsync(payload);
   }
 }
