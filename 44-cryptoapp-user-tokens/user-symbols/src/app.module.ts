@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserSymbolsModule } from './user-symbols/user-symbols.module';
 import { UserSymbol } from './user-symbols/user-symbol.entity';
+import { AuthClientModule } from './auth-client/auth-client.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { UserSymbol } from './user-symbols/user-symbol.entity';
       }),
     }),
     UserSymbolsModule,
+    AuthClientModule,
   ],
 })
 export class AppModule {}
