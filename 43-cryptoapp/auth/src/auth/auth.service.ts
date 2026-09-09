@@ -13,7 +13,9 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signup(signupDto: SignupDto): Promise<{ accessToken: string }> {
+  async signup(
+    signupDto: SignupDto,
+  ): Promise<{ accessToken: string; user: Omit<User, 'password'> }> {
     const existingUser = await this.usersService.findByEmail(signupDto.email);
     if (existingUser) {
       throw new ConflictException('user with this email already exist');
@@ -24,13 +26,17 @@ export class AuthService {
     const accessToken = await this.signJwt(user);
     return {
       accessToken,
+      user: this.toSafeUser(user),
     };
   }
 
-  async login(user: User): Promise<{ accessToken: string }> {
+  async login(
+    user: User,
+  ): Promise<{ accessToken: string; user: Omit<User, 'password'> }> {
     const accessToken = await this.signJwt(user);
     return {
       accessToken,
+      user: this.toSafeUser(user),
     };
   }
 
@@ -51,5 +57,11 @@ export class AuthService {
   private signJwt(user: User): Promise<string> {
     const payload: JwtPayload = { sub: user.id, email: user.email };
     return this.jwtService.signAsync(payload);
+  }
+
+  private toSafeUser(user: User): Omit<User, 'password'> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _password, ...safeUser } = user;
+    return safeUser;
   }
 }
