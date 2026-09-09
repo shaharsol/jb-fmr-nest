@@ -5,7 +5,7 @@ import { AuthClientGuard } from './guards/auth-client.guard';
 
 @Module({
   imports: [HttpModule],
-  providers: [AuthClientService],
+  providers: [AuthClientService, AuthClientGuard],
   exports: [AuthClientService, AuthClientGuard],
 })
 export class AuthClientModule {}

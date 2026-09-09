@@ -1,6 +1,8 @@
-import { Controller, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { UserSymbolsService } from './user-symbols.service';
 import { AuthClientGuard } from 'src/auth-client/guards/auth-client.guard';
+import { CurrentUser } from 'src/auth-client/decorators/current-user.decorator';
+import { AuthUser } from 'src/auth-client/auth-client.types';
 
 @Controller('user-symbols')
 @UseGuards(AuthClientGuard)
@@ -11,7 +13,8 @@ export class UserSymbolsController {
     // return this.userSymbolsService.follow()
   }
 
-  findAll() {
-    // return this.userSymbolsService.findAllForUser()
+  @Get('')
+  findAll(@CurrentUser() user: AuthUser) {
+    return this.userSymbolsService.findAllForUser(user.id);
   }
 }

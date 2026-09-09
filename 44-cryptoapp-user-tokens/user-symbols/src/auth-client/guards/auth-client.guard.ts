@@ -1,7 +1,8 @@
-import { CanActivate, ExecutionContext } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthClientService } from '../auth-client.service';
 import { AuthenticatedRequest } from '../auth-client.types';
 
+@Injectable()
 export class AuthClientGuard implements CanActivate {
   constructor(private readonly authClientService: AuthClientService) {}
 
