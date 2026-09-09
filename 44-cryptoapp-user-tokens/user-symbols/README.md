@@ -1,0 +1,1 @@
+docker run --name mysql_cryptoapp_user_symbols -d -e MYSQL_ALLOW_EMPTY_PASSWORD=1 -e MYSQL_DATABASE=crypto_user_symbols -e MYSQL_TCP_PORT=3306 -p 3307:3306 mysql:latest
