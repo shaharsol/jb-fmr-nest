@@ -61,7 +61,7 @@ export class AuthService {
 
   private toSafeUser(user: User): Omit<User, 'password'> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _password, ...safeUser } = user;
-    return safeUser;
+    const { password, ...safeUser } = user; // id, email, password, cretadAt, updatedAt
+    return safeUser; // id, email, cretadAt, updatedAt
   }
 }
