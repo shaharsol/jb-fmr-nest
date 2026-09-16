@@ -1,0 +1,176 @@
+name: cryptoapp
+
+services:
+  mysql-auth:
+    image: mysql:8.0
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: auth
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_auth_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mysql-user-tokens:
+    image: mysql:8.0
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: user_tokens
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_user_tokens_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mysql-distinct-tokens:
+    image: mysql:8.0
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: distinct_tokens
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_distinct_tokens_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  auth-app:
+    build:
+      context: ./07-auth-app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DB_HOST: mysql-auth
+      DB_PORT: "3306"
+      DB_USERNAME: root
+      DB_PASSWORD: ""
+      DB_NAME: auth
+      JWT_SECRET: dev-jwt-secret-change-me
+      JWT_EXPIRES_IN: 1d
+    depends_on:
+      mysql-auth:
+        condition: service_healthy
+    restart: unless-stopped
+
+  user-tokens:
+    build:
+      context: ./10-user-tokens-with-rabbitmq
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: production
+      PORT: "3002"
+      DB_HOST: mysql-user-tokens
+      DB_PORT: "3306"
+      DB_USERNAME: root
+      DB_PASSWORD: ""
+      DB_NAME: user_tokens
+      AUTH_SERVICE_URL: http://auth-app:3000
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      RABBITMQ_QUEUE: distinct_tokens
+    depends_on:
+      mysql-user-tokens:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth-app:
+        condition: service_started
+    restart: unless-stopped
+
+  distinct-tokens:
+    build:
+      context: ./11-distinct-tokens
+    environment:
+      NODE_ENV: production
+      DB_HOST: mysql-distinct-tokens
+      DB_PORT: "3306"
+      DB_USERNAME: root
+      DB_PASSWORD: ""
+      DB_NAME: distinct_tokens
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      RABBITMQ_QUEUE: distinct_tokens
+    depends_on:
+      mysql-distinct-tokens:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scraper:
+    build:
+      context: ./12-scraper
+    environment:
+      NODE_ENV: production
+      SCRAPE_INTERVAL_MS: "60000"
+      DB_HOST: mysql-distinct-tokens
+      DB_PORT: "3306"
+      DB_USERNAME: root
+      DB_PASSWORD: ""
+      DB_NAME: distinct_tokens
+      MONGODB_URI: mongodb://mongodb:27017/crypto_prices
+      GOOGLE_FINANCE_QUOTE_URL: https://www.google.com/finance/beta/quote/{symbol}-USD
+    depends_on:
+      mysql-distinct-tokens:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      distinct-tokens:
+        condition: service_started
+    restart: unless-stopped
+
+  token-values:
+    build:
+      context: ./token-values
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: production
+      PORT: "3003"
+      MONGODB_URI: mongodb://mongodb:27017/crypto_prices
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql_auth_data:
+  mysql_user_tokens_data:
+  mysql_distinct_tokens_data:
+  mongodb_data:
